@@ -1,0 +1,161 @@
+#
+# ----------------------------------------------
+
+double_dataset_type = 'ssda_cls_double_dataset'
+triple_dataset_type = 'ssda_cls_triple_dataset'
+single_dataset_type = 'ssda_cls_dataset'
+source_domain = 'imagenetdg_imageneta'
+target_domain = 'imagenetdg_imageneta'
+
+img_norm_cfg = dict(
+    # mean=[123.675, 116.28, 103.53],
+    # std=[58.395, 57.12, 57.375],
+    mean=[122.771, 116.746, 104.093],
+    std=[68.500, 66.632, 70.323],
+    to_rgb=True)
+
+rand_range_aug = dict(
+    type='RandRangeAug',
+    num_policies=2,
+    magnitude_level=10,
+    policies=[
+        dict(type='AutoContrast'),
+        dict(type='Brightness', magnitude_key='magnitude', magnitude_range=[0.1, 1.9], prob=0.5),
+        dict(type='ColorTransform', magnitude_key='magnitude', magnitude_range=[0.1, 1.9], prob=0.5),
+        dict(type='Contrast', magnitude_key='magnitude', magnitude_range=[0.1, 1.9], prob=0.5),
+        dict(type='Equalize'),
+        dict(type='Identity'),
+        dict(type='Posterize', magnitude_key='bits', magnitude_range=[4, 8], prob=0.5),
+        dict(type='Rotate', magnitude_key='angle', magnitude_range=[-30, 30], prob=0.5),
+        dict(type='Sharpness', magnitude_key='magnitude', magnitude_range=[0.1, 1.9], prob=0.5),
+        dict(type='Shear', magnitude_key='magnitude', magnitude_range=[0, 0.3], direction='horizontal', prob=0.5),
+        dict(type='Shear', magnitude_key='magnitude', magnitude_range=[0, 0.3], direction='vertical', prob=0.5),
+        dict(type='Solarize', magnitude_key='thr', magnitude_range=[0, 256], prob=0.5),
+        dict(type='Translate', magnitude_key='magnitude', magnitude_range=[-0.3, 0.3], direction='horizontal',
+             prob=0.5),
+        dict(type='Translate', magnitude_key='magnitude', magnitude_range=[-0.3, 0.3], direction='vertical',
+             prob=0.5),
+    ]
+)
+
+train_pipelines = [
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', size=256, backend='cv2'),
+    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+    dict(type='RandomCrop', size=224),
+    rand_range_aug,
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='ToTensor', keys=['gt_label']),
+    dict(type='Collect', keys=['img', 'gt_label', 'domain_label'])
+]
+
+weak_pipelines = [
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', size=256, backend='cv2'),
+    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+    dict(type='RandomCrop', size=224),
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='ToTensor', keys=['gt_label']),
+    dict(type='Collect', keys=['img', 'gt_label', 'domain_label','image_ind'])
+]
+
+train_pipelines2 = [
+    dict(type='LoadImageFromFile'),
+    dict(type='RandomResizedCrop', size=224, backend='cv2'),
+    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+    rand_range_aug,
+    dict(type='Cutout', shape=16, ),
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='ToTensor', keys=['gt_label']),
+    dict(type='Collect', keys=['img', 'gt_label'])
+]
+
+test_pipelines = [
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', size=256, backend='cv2'),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='ToTensor', keys=['gt_label']),
+    dict(type='Collect', keys=['img', 'gt_label'])
+]
+
+source_datasets = dict(
+    type=triple_dataset_type,
+    name=source_domain,
+    split='train',
+    pipeline=weak_pipelines,
+    pipeline2=weak_pipelines,
+    label_transform=list(range(100)),
+    shot_per_class=2,
+    builder=dict(
+        samples_per_gpu=4,
+        persistent_workers=True,
+    )
+)
+
+target_unlabeled_datasets = dict(
+    type=triple_dataset_type,
+    name=target_domain,
+    split='train',
+    pipeline=weak_pipelines,
+    pipeline2=train_pipelines2,
+    # shot=0,
+    # 　min_len=60000,
+    builder=dict(
+        samples_per_gpu=1,
+        persistent_workers=True,
+    )
+)
+
+target_test_datasets_base = dict(
+    type=single_dataset_type,
+    name=target_domain,
+    split='test',
+    pipeline=test_pipelines,
+    # label_transform=list(range(100)),
+    builder=dict(
+        samples_per_gpu=2048,
+    )
+)
+
+target_test_datasets_new = dict(
+    type=single_dataset_type,
+    name=target_domain,
+    split='testnew',
+    pipeline=test_pipelines,
+    label_transform=list(range(100, 200)),
+    builder=dict(
+        samples_per_gpu=2048,
+    )
+)
+
+source_test_datasets = dict(
+    type=single_dataset_type,
+    name=source_domain,
+    split='val',
+    pipeline=test_pipelines,
+    label_transform=list(range(200)),
+    builder=dict(
+        samples_per_gpu=1024,
+    )
+)
+
+train_datasets = {
+    'pipeline': train_pipelines,
+    0: source_datasets,
+}
+
+test_datasets = {
+    0: target_test_datasets_base,
+    # 1: target_test_datasets_new,
+}
+
+datasets = dict(
+    n_workers=6,
+    train=train_datasets,
+    test=test_datasets,
+)

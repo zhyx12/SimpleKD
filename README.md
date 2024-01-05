@@ -58,7 +58,7 @@ Here we take Aircraft under the base-to-new task setting as an example.
 1. Some preparations.
 
 - Make a folder '/home/username/PycharmProjects', replace the username by your name under /home.
-- Download the "code.zip" here. Unzip it under '/home/username/PycharmProjects', and rename this folder by 'RobustKD' (needed in [clip_distill_train.sh](experiments%2Fclip_distill_train.sh))
+- Download the "code.zip" here. Unzip it under '/home/username/PycharmProjects', and rename this folder by 'RobustKD' (needed in [clip_distill_train.sh](Robust/experiments/clip_distill_train.sh))
 
 2. Go to the project home
 

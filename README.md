@@ -1,5 +1,5 @@
 # CVPR2024
-This is the code for our paper: Robust Knowledge Distillation for Generalizable Vision-Language Models. 
+This is the code for our paper: Robust Knowledge Distillation for Generalizable Vision-Language Models.  The code.zip contains everything here and can be downloaded directly.
 
 ## Project structure
 

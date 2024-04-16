@@ -1,6 +1,12 @@
 # ECCV2024
 This is the code for our paper: A Simple Knowledge Distillation Framework for Generalizable Vision-Language Models.  The code.zip contains everything here and can be downloaded directly.
 
+# Method
+
+![Our Method](./figure/method.png)
+
+Figure 1. (a) The framework of our proposed method. We use two student models and a teacher model. Each one consists of an image encoder and a text encoder equipped with LoRA weights. In each student model, we apply two knowledge distillation losses: Intra-Sample KD loss and Inter-sample KD loss, besides the standard cross-entropy loss. During the inference stage, only the teacher model is used. (b) The process of producing fused weights in the teacher model from LoRA weights of two student models.
+
 ## Project structure
 
 The project structure is presented as follows

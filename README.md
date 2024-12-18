@@ -1,4 +1,4 @@
-# ECCV2024
+# TNNLS Submission
 This is the code for our paper: A Simple Knowledge Distillation Framework for Generalizable Vision-Language Models.  The code.zip contains everything here and can be downloaded directly.
 
 # Method
